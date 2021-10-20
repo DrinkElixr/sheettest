@@ -1,10 +1,7 @@
 from __future__ import print_function
-import base64
-import ezsheets
+
 import smtplib
-import ezgmail
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+
 from datetime import datetime
 #ezgmail.init(tokenFile="token.json")
 now = datetime.now()
