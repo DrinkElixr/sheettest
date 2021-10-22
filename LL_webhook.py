@@ -210,9 +210,12 @@ def welcome():
         dff = dff[dff["Pushed"] != False]
         dff=dff.dropna()
         i_list = dff.index.to_list()
-        print((dff["DD"]))
-        ddd = dff["DD"][i_list[-1]]
-        del_order(data[3], ddd, data[6])
+        if len(i_list)==0:
+            pass
+        else:
+            print((dff["DD"]))
+            ddd = dff["DD"][i_list[-1]]
+            del_order(data[3], ddd, data[6])
     elif data[2] == "edit":
         if data[4] == None:
             send_email(data[5], f"{data[-1]} Sheet Push Failure",
