@@ -199,7 +199,7 @@ def welcome():
     print(data)
     success = None
     successd = None
-    dow=json["data"]["notes"]
+    dow=request.json["data"]["notes"]
     if dow=="EET":
         ee=True
     else: ee=False
