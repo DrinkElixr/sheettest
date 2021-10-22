@@ -30,7 +30,7 @@ def send_email(rec, sub, message):
     server.quit()
 
 
-def new_order(data):
+def new_order(data,ee):
     sheet = orders()
     match = False
     for n in range(10, 300, 2):
@@ -62,6 +62,8 @@ def new_order(data):
                             sheet[f"{alph[l + 1]}{n + 1}"] = cases
                         elif "Dream" in name and "Tincture" in name:
                             sheet[f"{alph[l + 2]}{n + 1}"] = cases
+                    if ee==True:
+                        sheet[f"{alph[l + 3]}{n+1}"] = "EET"
                     break
             break
     if match == True:
@@ -197,6 +199,10 @@ def welcome():
     print(data)
     success = None
     successd = None
+    dow=json["data"]["notes"]
+    if dow=="EET":
+        ee=True
+    else: ee=False
     if request.json["data"]["status"] == "Rejected":
         df = pd.read_csv("LL_Rec.csv", index_col=0)
         dff = df[df["Id"] == data[1]]
@@ -218,17 +224,17 @@ def welcome():
             i_list = dff.index.to_list()
 
             if len(dff) == 0:
-                success = new_order(data)
+                success = new_order(data,ee)
             else:
                 i = i_list[-1]
                 successd = del_order(dff["License"][i], dff["DD"][i], dff["Items"][i])
-                success = new_order(data)
+                success = new_order(data,ee)
     else:
         sheet=cadence()
         for n in range(6,600,2):
-            ln=sheet[f"E{n}"]
+            ln=sheet[f"E{n}"].replace("-","")
 
-            if data[3] in ln:
+            if data[3].replace("-","") in ln:
                 dow=sheet[f"A{n}"]
                 break
         codec={"Monday":0,"Tuesday":2,"Wednesday":3,"Thursday":4,"Friday":5,"EET":7}
@@ -237,11 +243,11 @@ def welcome():
             dd=dd+datetime.timedelta(days=1)
             if dd.date().weekday() == codec[dow]:
                 break
-        url="http://3dea-2600-4040-5008-8800-7ca0-e3bd-d3ad-c93.ngrok.io"
+        url="http://3.144.33.120:8080"
         send_email(data[5], f"Set Delivery Date For {data[-1]}",
                    f"No delivery date was detected for {data[-1]}.\n"
                    f"The next delivery date for {data[-1]} is {dow}, {dd.date()}. Click the link to set the delivery date to this date: \n"
-                   f"{url}/{data[1]}/{dd.strftime('%Y-%m-%d')}\n\n"
+                   f"{url}/{data[1]}/{dd.strftime('%Y-%m-%d')}/{dow}\n\n"
                    f"If the delivery date is different, Go to https://www.leaflink.com/c/tinc/{data[1]}/review/ and set the delivery date manually\n"
                    f"Upon entry of a delivery date, this order will be automatically entered into Cadence sheet and Orders sheet")
 
@@ -276,10 +282,11 @@ def webhook():
         return Response(status=200)
     else:
         abort(400)
-@app.route('/<id>/<dd>',methods=["GET"])
-def my_view_func(id,dd):
+@app.route('/<id>/<dd>/<dow>',methods=["GET"])
+def my_view_func(id,dd,dow):
     key = "fb221b8bb845bada1709347e9fb8b5ea9e0ddcba9f319c1b79e8ffae481833a0"
-    data={"ship_date": dd+" 06:00","notes":"Testing"}
+
+    data={"ship_date": dd+" 06:00","notes":dow}
     url = "https://www.leaflink.com/api/v2/orders-received/{}/".format(id)
     auth_header = 'App {}'.format(key)
     headers = {
